@@ -30,7 +30,7 @@
 
 # Changes from Qualcomm Innovation Center are provided under the following license:
 #
-# Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+# Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted (subject to the limitations in the
@@ -68,6 +68,9 @@ if [ -f /sys/devices/soc0/soc_id ]; then
 else
     soc_hwid=`cat /sys/devices/system/soc/soc0/id`
 fi
+
+#Set default value for properties common to all targets
+setprop vendor.display.supports_background_blur 1
 
 case "$target" in
     "taro")
@@ -125,8 +128,11 @@ case "$target" in
     ;;
     "parrot")
     case "$soc_hwid" in
-        537 | 583 | 613)
+        537 | 583 | 613 | 631 | 633 | 634 | 638)
         # Set property for Parrot
+        # SOC ID for Gaming SKU with Modem is 633
+        # SOC ID for Gaming SKU without Modem is 634
+        # SOC ID for SM7435 P is 638
         setprop vendor.gralloc.use_dma_buf_heaps 1
         setprop vendor.display.enable_posted_start_dyn 2
         setprop vendor.display.enable_allow_idle_fallback 1
@@ -141,11 +147,14 @@ case "$target" in
         setprop vendor.display.secure_preview_buffer_format 420_sp
         setprop vendor.gralloc.secure_preview_buffer_format 420_sp
         setprop vendor.display.disable_non_wfd_vds 1
+        setprop vendor.display.supports_background_blur 0
         ;;
-        568|602)
+        568|602|653|654)
         # Set property for Ravelin
         # SOC ID for Ravelin is 568
         # SOC ID for Ravelin APQ is 602
+        # SOC ID for SG_RAVELIN is 653
+        # SOC ID for SG_RAVELINP is 654
         setprop vendor.gralloc.use_dma_buf_heaps 1
         setprop vendor.display.enable_posted_start_dyn 2
         setprop vendor.display.enable_allow_idle_fallback 1
@@ -163,6 +172,10 @@ case "$target" in
         setprop vendor.display.enable_rotator_concurrency 1
         setprop vendor.display.disable_offline_rotator 0
         setprop vendor.display.disable_rotator_ubwc 1
+        setprop vendor.display.supports_background_blur 0
+        if [ "$soc_hwid" -eq 653 ] || [ "$soc_hwid" -eq 654 ]; then
+            setprop vendor.display.enable_latch_media_content 1
+        fi
         ;;
         581|582)
         # Set property for Montague
@@ -185,6 +198,7 @@ case "$target" in
         setprop vendor.display.enable_rotator_concurrency 1
         setprop vendor.display.disable_offline_rotator 0
         setprop vendor.display.disable_rotator_ubwc 1
+        setprop vendor.display.supports_background_blur 0
         ;;
     esac
     ;;
@@ -226,8 +240,9 @@ case "$target" in
             setprop vendor.display.thermal.version 1
             setprop vendor.display.target.version 3
             setprop vendor.display.disable_mitigated_fps 1
-            setprop vendor.display.disable_cwb_idle_fallback 1
             setprop vendor.display.wait_for_primary_display 1
+            setprop vendor.display.force_gpu_composition 1
+            setprop vendor.display.enable_rounded_corner 0
         ;;
     esac
     ;;
